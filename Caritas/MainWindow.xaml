@@ -1,0 +1,34 @@
+﻿<Window x:Class="Caritas.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Caritas"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="433" Width="660" HorizontalAlignment="Center" VerticalAlignment="Center" ResizeMode="NoResize" WindowStyle="ThreeDBorderWindow" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
+    <Grid Background="{DynamicResource {x:Static SystemColors.ActiveCaptionBrushKey}}" Margin="0,0,-6,0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="19*"/>
+            <ColumnDefinition Width="61*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.Effect>
+            <DropShadowEffect/>
+        </Grid.Effect>
+        <Button x:Name="button" Content="Spy" HorizontalAlignment="Left" Margin="108,31,0,0" VerticalAlignment="Top" Width="120" Click="button_Click" Height="22" Grid.Column="1"/>
+        <ListBox x:Name="listBox" HorizontalAlignment="Left" Height="336" Margin="10,58,0,0" VerticalAlignment="Top" Width="620" Grid.ColumnSpan="2"/>
+        <Button x:Name="button1" Content="START" HorizontalAlignment="Left" Margin="135,31,0,0" VerticalAlignment="Top" Width="120" RenderTransformOrigin="-2.12,0.136" Click="button1_Click" Height="22" Grid.ColumnSpan="2"/>
+        <Button x:Name="button2" Content="Playback" HorizontalAlignment="Left" Margin="233,31,0,0" VerticalAlignment="Top" Width="120" Click="button2_Click" Height="22" Grid.Column="1"/>
+        <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="Select element" VerticalAlignment="Top"/>
+        <ComboBox x:Name="comboBox" HorizontalAlignment="Left" Margin="10,31,0,0" VerticalAlignment="Top" Width="120" SelectionChanged="comboBox_SelectionChanged">
+
+            <ComboBoxItem Content="All Elements" HorizontalAlignment="Left" Width="118"/>
+            <ComboBoxItem Content="TextBlock" HorizontalAlignment="Left" Width="118"/>
+            <ComboBoxItem Content="Button" HorizontalAlignment="Left" Width="118"/>
+            <ComboBoxItem Content="Combobox" HorizontalAlignment="Left" Width="118"/>
+
+        </ComboBox>
+        <Button x:Name="button3" Content="Reset" HorizontalAlignment="Left" Margin="358,31,0,0" VerticalAlignment="Top" Width="115" Click="button3_Click_1" Height="22" Grid.Column="1"/>
+
+
+    </Grid>
+</Window>
