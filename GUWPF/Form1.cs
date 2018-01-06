@@ -18,9 +18,9 @@ namespace GUWPF
             InitializeComponent();
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             
-            if(!Directory.Exists(@"C:\SpyIMG\"))
+            if(!Directory.Exists(@"C:\Users\EDI\Documents\SpyIMG"))
             {
-                Directory.CreateDirectory(@"C:\SpyIMG\");
+                Directory.CreateDirectory(@"C:\Users\EDI\Documents\SpyIMG");
             }
 
         }
@@ -48,16 +48,16 @@ namespace GUWPF
 
 
         SpyOption SO = new SpyOption();
-        Process[] flexProc = Process.GetProcessesByName("FlexBARMS");
+        Process[] flexProc = Process.GetProcessesByName("AUT_SampleUI");
         Gu.Wpf.UiAutomation.Application App;
         IReadOnlyList<Gu.Wpf.UiAutomation.UiElement> Element;
         Gu.Wpf.UiAutomation.Window MainWindow;
 
-        public IReadOnlyList<Gu.Wpf.UiAutomation.UiElement> ElementClass (string type)
+        public IReadOnlyList<Gu.Wpf.UiAutomation.UiElement> ElementClass(string type)
         {
             return MainWindow.FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.ClassNameProperty, type));
         }
-        public IReadOnlyList<Gu.Wpf.UiAutomation.UiElement> SearchbyFramework (string type)
+        public IReadOnlyList<Gu.Wpf.UiAutomation.UiElement> SearchbyFramework(string type)
         {
             return MainWindow.FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.FrameworkIdProperty, type));
         }
@@ -72,7 +72,7 @@ namespace GUWPF
             {
                 App = Gu.Wpf.UiAutomation.Application.Attach(flexProc[0].Id);
                 MainWindow = App.MainWindow;
-                listBox1.Items.Add("FlexBARMS's id: " + MainWindow.ProcessId);
+                listBox1.Items.Add("AUT's id: " + MainWindow.ProcessId);
             });
         }
 
@@ -112,25 +112,28 @@ namespace GUWPF
         {
             if (type == "WPF" || type == "Win32")
             {
-                SearchbyFramework(type);
+                Element = SearchbyFramework(type);
+                //Element = MainWindow.FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.FrameworkIdProperty, type));
             }
             else if (type == "Button" || type == "TextBlock")
             {
-                ElementClass(type);
+
+                //ElementClass(type);
             }
 
            
 
             try
             {
-                using (StreamWriter writeLog = new StreamWriter(@"C:\SpyResult.txt", true))
+                using (StreamWriter writeLog = new StreamWriter(@"C:\Users\EDI\Documents\SpyResult.txt", true))
                 {
                     var current_time = DateTime.UtcNow;
-
+                    writeLog.WriteLine("[");
                     writeLog.WriteLine("\n");
                     writeLog.WriteLine("----------------------------------" + current_time + "----------------------------------");
                     writeLog.WriteLine("\n");
                     id = -1;
+
                     foreach (UiElement UIE in Element)
                     {
                         //System.Windows.Forms.MessageBox.Show(id.ToString());
@@ -149,14 +152,19 @@ namespace GUWPF
                             }
 
                             id++;
-                            listBox1.Items.Add("ID: " + id + " - " + el_auid + " - " + UIE.ClassName + " - " + el_name + " - " + UIE.Bounds.Top);
-                            writeLog.WriteLine("ID: " + id + " - " + el_auid + " - " + UIE.ClassName + " - " + el_name + " - " + UIE.Bounds.Top);
+                            listBox1.Items.Add("ID: " + id + " - " + el_auid + " - " + UIE.ClassName + " - " + el_name);
+
+
+                            // BEGIN WRITE RESULT TO FILE
+                            
+                            writeLog.WriteLine("ID: " + id + " - " + el_auid + " - " + UIE.ClassName + " - " + el_name);
                             writeLog.Flush();
 
                         }
                         //id++;
-                        
+                     
                     }
+                    writeLog.WriteLine("]");
                 }
             }
             catch (Exception err)
@@ -203,8 +211,6 @@ namespace GUWPF
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             int currentSelect = listBox1.SelectedIndex;
-
-            
 
             if (SO.option == "WPF")
             {
@@ -259,7 +265,7 @@ namespace GUWPF
             Element = MainWindow.FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.FrameworkIdProperty, "WPF"));
             id = 0;
 
-            using (StreamWriter writeLog = new StreamWriter(@"C:\SpyResult.txt", true))
+            using (StreamWriter writeLog = new StreamWriter(@"C:\Users\EDI\Documents\SpyResult_Capture.txt", true))
             {
                 writeLog.WriteLine("\n");
                 writeLog.WriteLine("----------------------------------" + current_time + "----------------------------------");
@@ -271,7 +277,7 @@ namespace GUWPF
                     try
                     {
                         //listBox1.Items.Add(id + " - " + UIE);
-                        UIE.CaptureToFile(@"C:\SpyIMG\" + id + " - " + UIE.ClassName + ".png");
+                        UIE.CaptureToFile(@"C:\Users\EDI\Documents\SpyIMG\" + id + " - " + UIE.ClassName + ".png");
 
                     }
                     catch (Exception ex)
@@ -283,7 +289,9 @@ namespace GUWPF
                     id++;
                 }
             }
+
             Thread.Sleep(500);
+
             this.WindowState = FormWindowState.Normal;
         }
 
