@@ -8,6 +8,9 @@ using System.Windows.Automation;
 using Gu.Wpf.UiAutomation;
 using System.IO;
 using System.Threading;
+using Newtonsoft.Json;
+using System.Security.AccessControl;
+using System.Security.Principal;
 
 namespace GUWPF
 {
@@ -22,6 +25,28 @@ namespace GUWPF
             {
                 Directory.CreateDirectory(@"C:\SpyIMG\");
             }
+        
+        }
+
+        class SpyResult
+        {
+            private int _index;
+            private string _automantionID;
+            private string _classname;
+            private string _name;
+            private string _framework;
+            private string _imagelocation;
+            private string _username;
+            private string _resultlocation;
+
+            public int index { get { return _index; } set { _index = value; } }
+            public string automationID { get { return _automantionID; } set { _automantionID = value; } }
+            public string classname { get { return _classname; } set { _classname = value; } }
+            public string name { get { return _name; } set { _name = value; } }
+            public string framework { get { return _framework; } set { _framework = value; } }
+            public string imagelocation { get { return _imagelocation; } set { _imagelocation = value; } }
+            public string username { get { return _username; } set { _username = value; } }
+            public string resultlocation { get { return _resultlocation; } set { _resultlocation = value; } }
 
         }
 
@@ -48,10 +73,17 @@ namespace GUWPF
 
 
         SpyOption SO = new SpyOption();
-        Process[] flexProc = Process.GetProcessesByName("FlexBARMS");
+        Process[] flexProc = Process.GetProcessesByName("AUT_SampleUI");
         Gu.Wpf.UiAutomation.Application App;
         IReadOnlyList<Gu.Wpf.UiAutomation.UiElement> Element;
         Gu.Wpf.UiAutomation.Window MainWindow;
+        public string localfolder;
+        SpyResult sr = new SpyResult();
+
+
+
+
+
 
         public IReadOnlyList<Gu.Wpf.UiAutomation.UiElement> ElementClass (string type)
         {
@@ -68,12 +100,27 @@ namespace GUWPF
         // ATTACH BUTTON
         private void button1_Click(object sender, EventArgs e)
         {
-            Task.Factory.StartNew(() =>
-            {
-                App = Gu.Wpf.UiAutomation.Application.Attach(flexProc[0].Id);
-                MainWindow = App.MainWindow;
-                listBox1.Items.Add("FlexBARMS's id: " + MainWindow.ProcessId);
-            });
+   
+            //Task.Factory.StartNew(() =>
+            //{
+                
+            //});
+
+            App = Gu.Wpf.UiAutomation.Application.Attach(flexProc[0].Id);
+            MainWindow = App.MainWindow;
+            listBox1.Items.Add("FlexBARMS's id: " + MainWindow.ProcessId);
+            sr.username = Environment.UserName;
+            sr.resultlocation = @"C:\Users\" + sr.username + @"\Documents\GuWPF";
+            Directory.CreateDirectory(sr.resultlocation);
+            GrantAccess(sr.resultlocation);
+        }
+
+        private void GrantAccess(string fullPath)
+        {
+            DirectoryInfo dInfo = new DirectoryInfo(fullPath);
+            DirectorySecurity dSecurity = dInfo.GetAccessControl();
+            dSecurity.AddAccessRule(new FileSystemAccessRule(sr.username, FileSystemRights.FullControl, InheritanceFlags.ObjectInherit | InheritanceFlags.ContainerInherit, PropagationFlags.InheritOnly, AccessControlType.Allow));
+            dInfo.SetAccessControl(dSecurity);
         }
 
 
@@ -83,7 +130,7 @@ namespace GUWPF
             listBox1.Items.Clear();
 
             int getselectitem = comboBox1.SelectedIndex;
-           
+
             if(getselectitem == 0)
             {
                 SO.option = SpyOption._selection.WPF.ToString();
@@ -107,55 +154,104 @@ namespace GUWPF
         }
 
 
+        public void mbox(string mess)
+        {
+            System.Windows.Forms.MessageBox.Show(mess);
+        }
+
         // SPY FUNCTION
         public void Spy(string type)
         {
+
+            
+
             if (type == "WPF" || type == "Win32")
             {
-                SearchbyFramework(type);
+                Element = SearchbyFramework(type);
             }
             else if (type == "Button" || type == "TextBlock")
             {
-                ElementClass(type);
+                Element = ElementClass(type);
             }
 
            
 
             try
             {
-                using (StreamWriter writeLog = new StreamWriter(@"C:\SpyResult.txt", true))
-                {
-                    var current_time = DateTime.UtcNow;
+                #region writetofile
+                //using (StreamWriter writeLog = new StreamWriter(@"C:\SpyResult.txt", true))
+                //{
+                //    var current_time = DateTime.UtcNow;
 
-                    writeLog.WriteLine("\n");
-                    writeLog.WriteLine("----------------------------------" + current_time + "----------------------------------");
-                    writeLog.WriteLine("\n");
-                    id = -1;
+                //    writeLog.WriteLine("\n");
+                //    writeLog.WriteLine("----------------------------------" + current_time + "----------------------------------");
+                //    writeLog.WriteLine("\n");
+                //    id = -1;
+                //    foreach (UiElement UIE in Element)
+                //    {
+                //        //System.Windows.Forms.MessageBox.Show(id.ToString());
+                //        if (!Double.IsInfinity(UIE.Bounds.Top))
+                //        {
+                //            var el_name = UIE.Name;
+                //            var el_auid = UIE.AutomationId;
+
+                //            if (UIE.Name == "")
+                //            {
+                //                el_name = "No Name";
+                //            }
+                //            if (UIE.AutomationId == "")
+                //            {
+                //                el_auid = "No AutomationID";
+                //            }
+
+                //            id++;
+                //            listBox1.Items.Add("ID: " + id + " - " + el_auid + " - " + UIE.ClassName + " - " + el_name + " - " + UIE.Bounds.Top);
+                //            writeLog.WriteLine("ID: " + id + " - " + el_auid + " - " + UIE.ClassName + " - " + el_name + " - " + UIE.Bounds.Top);
+                //            writeLog.Flush();
+
+                //        }
+                //        //id++;
+
+                //    }
+                #endregion
+                using (System.IO.StreamWriter file =
+                new System.IO.StreamWriter(sr.resultlocation, true))
+                {
+                    id = 0;
+             
                     foreach (UiElement UIE in Element)
                     {
-                        //System.Windows.Forms.MessageBox.Show(id.ToString());
                         if (!Double.IsInfinity(UIE.Bounds.Top))
                         {
-                            var el_name = UIE.Name;
-                            var el_auid = UIE.AutomationId;
 
+                            sr = new SpyResult
+                            {
+                                index = id,
+                                automationID = UIE.AutomationId,
+                                classname = UIE.ClassName,
+                                name = UIE.Name
+                            };
                             if (UIE.Name == "")
-                            {
-                                el_name = "No Name";
-                            }
+                                sr.name = "No Name";
                             if (UIE.AutomationId == "")
+                                sr.automationID = "No AutomationID";
+                            id++;
+
+                            string ObjectUI = JsonConvert.SerializeObject(sr, Formatting.Indented);
+                            if (sr.index == 0)
                             {
-                                el_auid = "No AutomationID";
+                                file.WriteLine("[");
+                                file.WriteLine(ObjectUI + ",");
+                            }
+                            else if (sr.index == Element.Count - 1)
+                            {
+                                file.WriteLine(ObjectUI);
+                                file.WriteLine("]");
                             }
 
-                            id++;
-                            listBox1.Items.Add("ID: " + id + " - " + el_auid + " - " + UIE.ClassName + " - " + el_name + " - " + UIE.Bounds.Top);
-                            writeLog.WriteLine("ID: " + id + " - " + el_auid + " - " + UIE.ClassName + " - " + el_name + " - " + UIE.Bounds.Top);
-                            writeLog.Flush();
 
+                            listBox1.Items.Add("ID: " + sr.index + " - " + sr.automationID + " - " + sr.classname + " - " + sr.name + " - " + UIE.Bounds.Top);
                         }
-                        //id++;
-                        
                     }
                 }
             }
@@ -190,7 +286,7 @@ namespace GUWPF
 
         private void button3_Click(object sender, EventArgs e)
         {
-   
+
         }
 
         private void button4_Click(object sender, EventArgs e)
@@ -250,6 +346,8 @@ namespace GUWPF
         // CAPTURE BUTTON
         private void button5_Click(object sender, EventArgs e)
         {
+            SpyResult sr = new SpyResult();
+
             var current_time = DateTime.UtcNow;
 
             this.WindowState = FormWindowState.Minimized;
@@ -259,7 +357,7 @@ namespace GUWPF
             Element = MainWindow.FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.FrameworkIdProperty, "WPF"));
             id = 0;
 
-            using (StreamWriter writeLog = new StreamWriter(@"C:\SpyResult.txt", true))
+            using (StreamWriter writeLog = new StreamWriter(sr.resultlocation + ".txt", true))
             {
                 writeLog.WriteLine("\n");
                 writeLog.WriteLine("----------------------------------" + current_time + "----------------------------------");
