@@ -8,6 +8,7 @@ using System.Windows.Automation;
 using Gu.Wpf.UiAutomation;
 using System.IO;
 using System.Threading;
+using Newtonsoft.Json;
 
 namespace GUWPF
 {
@@ -23,7 +24,35 @@ namespace GUWPF
                 Directory.CreateDirectory(@"C:\Users\EDI\Documents\SpyIMG");
             }
 
+            SR.username = Environment.UserName;
         }
+
+        class LogWriterInfo
+        {
+            private string _username;
+            private string _direcory;
+            private string _currenttime;
+
+            public string username { get { return _username; } set { _username = value; } }
+            public string directory { get { return _direcory; } set { _direcory = value; } }
+            public string currenttime { get { return _currenttime; } set { _currenttime = value; } }
+
+        }
+
+        class SpyResult : LogWriterInfo
+        {
+            private int _index;
+            private string _autoID;
+            private string _classname;
+            private string _name;
+
+            public int index { get{ return _index; } set { _index = value; } }
+            public string autoDI { get { return _autoID;} set { _autoID = value; } }
+            public string classname { get { return _classname; } set { _classname = value; } }
+            public string name { get { return _name; } set { _name = value; } }
+        }
+
+
 
         class SpyOption
         {
@@ -44,15 +73,17 @@ namespace GUWPF
             }
         }
 
-        
 
 
+
+        SpyResult SR = new SpyResult();     
         SpyOption SO = new SpyOption();
+
         Process[] flexProc = Process.GetProcessesByName("AUT_SampleUI");
         Gu.Wpf.UiAutomation.Application App;
         IReadOnlyList<Gu.Wpf.UiAutomation.UiElement> Element;
         Gu.Wpf.UiAutomation.Window MainWindow;
-
+       
         public IReadOnlyList<Gu.Wpf.UiAutomation.UiElement> ElementClass(string type)
         {
             return MainWindow.FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.ClassNameProperty, type));
@@ -68,14 +99,25 @@ namespace GUWPF
         // ATTACH BUTTON
         private void button1_Click(object sender, EventArgs e)
         {
+   
             Task.Factory.StartNew(() =>
             {
-                App = Gu.Wpf.UiAutomation.Application.Attach(flexProc[0].Id);
-                MainWindow = App.MainWindow;
-                listBox1.Items.Add("AUT's id: " + MainWindow.ProcessId);
+                try
+                {
+                    App = Gu.Wpf.UiAutomation.Application.Attach(flexProc[0].Id);
+                    MainWindow = App.MainWindow;
+                    listBox1.Items.Add("AUT's id: " + MainWindow.ProcessId);
+                } catch(Exception ex)
+                {
+                    mebox(ex.Message);
+                }
             });
         }
 
+        private void mebox(string mess)
+        {
+            System.Windows.Forms.MessageBox.Show(mess);
+        }
 
         // SPY BUTTON
         private void button2_Click(object sender, EventArgs e)
@@ -118,53 +160,92 @@ namespace GUWPF
             else if (type == "Button" || type == "TextBlock")
             {
 
-                //ElementClass(type);
+                Element = ElementClass(type);
             }
 
            
 
             try
             {
-                using (StreamWriter writeLog = new StreamWriter(@"C:\Users\EDI\Documents\SpyResult.txt", true))
-                {
-                    var current_time = DateTime.UtcNow;
-                    writeLog.WriteLine("[");
-                    writeLog.WriteLine("\n");
-                    writeLog.WriteLine("----------------------------------" + current_time + "----------------------------------");
-                    writeLog.WriteLine("\n");
-                    id = -1;
+                #region TraditionalWriteLog
+                //using (StreamWriter writeLog = new StreamWriter(@"C:\Users\EDI\Documents\SpyResult.txt", true))
+                //{
+                //    var current_time = DateTime.UtcNow;
+                //    writeLog.WriteLine("[");
+                //    writeLog.WriteLine("\n");
+                //    writeLog.WriteLine("----------------------------------" + current_time + "----------------------------------");
+                //    writeLog.WriteLine("\n");
+                //    id = -1;
 
+                //    foreach (UiElement UIE in Element)
+                //    {
+                //        //System.Windows.Forms.MessageBox.Show(id.ToString());
+                //        if (!Double.IsInfinity(UIE.Bounds.Top))
+                //        {
+                //            var el_name = UIE.Name;
+                //            var el_auid = UIE.AutomationId;
+
+                //            if (UIE.Name == "")
+                //            {
+                //                el_name = "No Name";
+                //            }
+                //            if (UIE.AutomationId == "")
+                //            {
+                //                el_auid = "No AutomationID";
+                //            }
+
+                //            id++;
+                //            listBox1.Items.Add("ID: " + id + " - " + el_auid + " - " + UIE.ClassName + " - " + el_name);
+
+
+                //            // BEGIN WRITE RESULT TO FILE
+
+                //            writeLog.WriteLine("ID: " + id + " - " + el_auid + " - " + UIE.ClassName + " - " + el_name);
+                //            writeLog.Flush();
+
+                //        }
+                //        //id++;
+
+                //    }
+                //    writeLog.WriteLine("]");
+                //}
+                #endregion
+                using (System.IO.StreamWriter file =
+                new System.IO.StreamWriter(@"C:\Users\" + SR.username + @"\Desktop\Result.json"))
+                {
                     foreach (UiElement UIE in Element)
                     {
-                        //System.Windows.Forms.MessageBox.Show(id.ToString());
-                        if (!Double.IsInfinity(UIE.Bounds.Top))
+                        SR.index = id;
+                        SR.autoDI = UIE.AutomationId;
+                        SR.classname = UIE.ClassName;
+                        SR.name = UIE.Name;
+                        
+                        
+
+                        if (UIE.AutomationId == "")
+                            SR.autoDI = "No AutomationID";
+                        if (UIE.Name == "")
+                            SR.name = "No Name";
+
+                        id++;
+
+                        listBox1.Items.Add("ID: " + SR.index + " - " + SR.autoDI + " - " + SR.classname + " - " + SR.name);
+                        string ObjectUI = JsonConvert.SerializeObject(SR, Formatting.Indented);
+
+                        if (SR.index == 0)
                         {
-                            var el_name = UIE.Name;
-                            var el_auid = UIE.AutomationId;
-
-                            if (UIE.Name == "")
-                            {
-                                el_name = "No Name";
-                            }
-                            if (UIE.AutomationId == "")
-                            {
-                                el_auid = "No AutomationID";
-                            }
-
-                            id++;
-                            listBox1.Items.Add("ID: " + id + " - " + el_auid + " - " + UIE.ClassName + " - " + el_name);
-
-
-                            // BEGIN WRITE RESULT TO FILE
-                            
-                            writeLog.WriteLine("ID: " + id + " - " + el_auid + " - " + UIE.ClassName + " - " + el_name);
-                            writeLog.Flush();
-
+                            file.WriteLine("[");
+                            file.WriteLine(ObjectUI + ",");
                         }
-                        //id++;
-                     
+                        else if (SR.index == Element.Count - 1)
+                        {
+                            file.WriteLine(ObjectUI);
+                            file.WriteLine("]");
+                        }
+
+                        else file.WriteLine(ObjectUI + ",");
+
                     }
-                    writeLog.WriteLine("]");
                 }
             }
             catch (Exception err)
