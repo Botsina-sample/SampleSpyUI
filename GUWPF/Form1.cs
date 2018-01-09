@@ -181,49 +181,7 @@ namespace GUWPF
 
             try
             {
-                #region TraditionalWriteLog
-                //using (StreamWriter writeLog = new StreamWriter(@"C:\Users\EDI\Documents\SpyResult.txt", true))
-                //{
-                //    var current_time = DateTime.UtcNow;
-                //    writeLog.WriteLine("[");
-                //    writeLog.WriteLine("\n");
-                //    writeLog.WriteLine("----------------------------------" + current_time + "----------------------------------");
-                //    writeLog.WriteLine("\n");
-                //    id = -1;
-
-                //    foreach (UiElement UIE in Element)
-                //    {
-                //        //System.Windows.Forms.MessageBox.Show(id.ToString());
-                //        if (!Double.IsInfinity(UIE.Bounds.Top))
-                //        {
-                //            var el_name = UIE.Name;
-                //            var el_auid = UIE.AutomationId;
-
-                //            if (UIE.Name == "")
-                //            {
-                //                el_name = "No Name";
-                //            }
-                //            if (UIE.AutomationId == "")
-                //            {
-                //                el_auid = "No AutomationID";
-                //            }
-
-                //            id++;
-                //            listBox1.Items.Add("ID: " + id + " - " + el_auid + " - " + UIE.ClassName + " - " + el_name);
-
-
-                //            // BEGIN WRITE RESULT TO FILE
-
-                //            writeLog.WriteLine("ID: " + id + " - " + el_auid + " - " + UIE.ClassName + " - " + el_name);
-                //            writeLog.Flush();
-
-                //        }
-                //        //id++;
-
-                //    }
-                //    writeLog.WriteLine("]");
-                //}
-                #endregion
+              
                 var curtime = DateTime.Now;
                 var day = curtime.Day;
                 var month = curtime.Month;
@@ -235,50 +193,61 @@ namespace GUWPF
                 
 
                 var reformat = day + "-" + month + "-" + year + "__" + hour + "-" + minute + "-" + sec + "-";
-                mebox(reformat);
+                
 
                 using (System.IO.StreamWriter file =
                 new System.IO.StreamWriter(@"C:\Users\" + SR.username + @"\Documents\GUWPF\"+reformat+"SpyResult.json"))
                 {
+                    this.WindowState = FormWindowState.Minimized;
+                    Thread.Sleep(500);
                     SR.currenttime = curtime.ToString();
+
+                    id = 0;
                     foreach (UiElement UIE in Element)
                     {
-                        SR.index = id;
-                        SR.autoDI = UIE.AutomationId;
-                        SR.classname = UIE.ClassName;
-                        SR.name = UIE.Name;
-                        //SR.currenttime = curtime.ToString();
+                        if(!UIE.Bounds.IsEmpty)
+                        { 
+                            SR.index = id;
+                            SR.autoDI = UIE.AutomationId;
+                            SR.classname = UIE.ClassName;
+                            SR.name = UIE.Name;
+                            //SR.currenttime = curtime.ToString();
 
 
-                        if (UIE.AutomationId == "")
-                            SR.autoDI = "No AutomationID";
-                        if (UIE.Name == "")
-                            SR.name = "No Name";
+                            if (UIE.AutomationId == "")
+                                SR.autoDI = "No AutomationID";
+                            if (UIE.Name == "")
+                                SR.name = "No Name";
 
-                        id++;
+                            UIE.CaptureToFile(@"C:\Users\" + SR.username + @"\Documents\GUWPF\SpyIMG\" + SR.index + " - " + SR.classname + ".png");
+                            id++;
 
-                        listBox1.Items.Add("ID: " + SR.index + " - " + SR.autoDI + " - " + SR.classname + " - " + SR.name);
-                        string ObjectUI = JsonConvert.SerializeObject(SR, Formatting.Indented);
+                         
 
-                        if (SR.index == 0)
-                        {
-                            file.WriteLine("[");
-                            file.WriteLine(ObjectUI + ",");
+                            listBox1.Items.Add("ID: " + SR.index + " - " + SR.autoDI + " - " + SR.classname + " - " + SR.name + " - " + UIE.Bounds.IsEmpty);
+                            string ObjectUI = JsonConvert.SerializeObject(SR, Formatting.Indented);
+
+                            if (SR.index == 0)
+                            {
+                                file.WriteLine("[");
+                                file.WriteLine(ObjectUI + ",");
+                            }
+                            else if (SR.index == Element.Count - 1)
+                            {
+                                file.WriteLine(ObjectUI);
+                                file.WriteLine("]");
+                            }
+
+                            else file.WriteLine(ObjectUI + ",");
                         }
-                        else if (SR.index == Element.Count - 1)
-                        {
-                            file.WriteLine(ObjectUI);
-                            file.WriteLine("]");
-                        }
-
-                        else file.WriteLine(ObjectUI + ",");
-
+            
                     }
+                    this.WindowState = FormWindowState.Normal;
                 }
             }
             catch (Exception err)
             {
-                System.Windows.Forms.MessageBox.Show(err.Message);
+                listBox1.Items.Add(id + " - " + SR.classname + " - " + err.Message);
             }
 
         }
@@ -293,11 +262,29 @@ namespace GUWPF
 
         public void checkbox()
         {
-            Element = MainWindow.FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.FrameworkIdProperty, "WPF"));
+            Element = SearchbyFramework("WPF");
+            id = 0;
             var selectID = Convert.ToInt16(textBox1.Text);
             try
             {
-                Element[selectID].AsButton().Click();
+
+                foreach (UiElement UIE in Element)
+                {
+                    if (!UIE.Bounds.IsEmpty)
+                    {
+                        if(id == selectID)
+                        {
+                            //listBox1.Items.Add("ID: " + id + " - " + UIE.AutomationId + " - " + UIE.ClassName + " - " + UIE.Name + " - " + UIE.Bounds.IsEmpty);
+                            UIE.AsButton().Click();
+                        }
+                        id++;
+                    }
+
+     
+                }
+
+         
+              
             }
             catch (Exception ex)
             {
@@ -365,7 +352,7 @@ namespace GUWPF
         // CAPTURE BUTTON
         private void button5_Click(object sender, EventArgs e)
         {
-            var current_time = DateTime.UtcNow;
+            var current_time = DateTime.Now;
 
             this.WindowState = FormWindowState.Minimized;
 
@@ -392,6 +379,7 @@ namespace GUWPF
                     catch (Exception ex)
                     {
 
+                        listBox1.Items.Add(id + UIE.ClassName + " - " + UIE.IsOffscreen);
                         writeLog.WriteLine(id + " - " + UIE.ClassName + " - " + ex.Message);
                         writeLog.Flush();
                     }
