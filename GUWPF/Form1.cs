@@ -18,15 +18,17 @@ namespace GUWPF
         {
             InitializeComponent();
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            SR.username = Environment.UserName;
 
-            if (!Directory.Exists(@"C:\Users\EDI\Documents\SpyIMG"))
+            if (!Directory.Exists(@"C:\Users\"+SR.username+@"\Documents\GUWPF"))
             {
-                Directory.CreateDirectory(@"C:\Users\EDI\Documents\SpyIMG");
+                Directory.CreateDirectory(@"C:\Users\" + SR.username + @"\Documents\GUWPF");
+                Directory.CreateDirectory(@"C:\Users\" + SR.username + @"\Documents\GUWPF\SpyIMG");
             }
 
-            SR.username = Environment.UserName;
+    
         }
-
+        
         class LogWriterInfo
         {
             private string _username;
@@ -36,7 +38,17 @@ namespace GUWPF
             public string username { get { return _username; } set { _username = value; } }
             public string directory { get { return _direcory; } set { _direcory = value; } }
             public string currenttime { get { return _currenttime; } set { _currenttime = value; } }
+            
 
+        }
+
+        class SpyIMG
+        {
+            private int _imgID;
+            private string _imgClassName;
+
+            public int imgID { get { return _imgID; } set { _imgID = value; } }
+            public string imgClassName { get { return _imgClassName; } set { _imgClassName = value; } }
         }
 
         class SpyResult : LogWriterInfo
@@ -45,6 +57,7 @@ namespace GUWPF
             private string _autoID;
             private string _classname;
             private string _name;
+           
 
             public int index { get { return _index; } set { _index = value; } }
             public string autoDI { get { return _autoID; } set { _autoID = value; } }
@@ -211,16 +224,30 @@ namespace GUWPF
                 //    writeLog.WriteLine("]");
                 //}
                 #endregion
+                var curtime = DateTime.Now;
+                var day = curtime.Day;
+                var month = curtime.Month;
+                var year = curtime.Year;
+
+                var sec = curtime.Second;
+                var hour = curtime.Hour;
+                var minute = curtime.Minute;
+                
+
+                var reformat = day + "-" + month + "-" + year + "__" + hour + "-" + minute + "-" + sec + "-";
+                mebox(reformat);
+
                 using (System.IO.StreamWriter file =
-                new System.IO.StreamWriter(@"C:\Users\" + SR.username + @"\Desktop\Result.json"))
+                new System.IO.StreamWriter(@"C:\Users\" + SR.username + @"\Documents\GUWPF\"+reformat+"SpyResult.json"))
                 {
+                    SR.currenttime = curtime.ToString();
                     foreach (UiElement UIE in Element)
                     {
                         SR.index = id;
                         SR.autoDI = UIE.AutomationId;
                         SR.classname = UIE.ClassName;
                         SR.name = UIE.Name;
-
+                        //SR.currenttime = curtime.ToString();
 
 
                         if (UIE.AutomationId == "")
@@ -359,7 +386,7 @@ namespace GUWPF
                     try
                     {
                         //listBox1.Items.Add(id + " - " + UIE);
-                        UIE.CaptureToFile(@"C:\Users\EDI\Documents\SpyIMG\" + id + " - " + UIE.ClassName + ".png");
+                        UIE.CaptureToFile(@"C:\Users\"+SR.username+@"\Documents\GUWPF\SpyIMG\" + id + " - " + UIE.ClassName + ".png");
 
                     }
                     catch (Exception ex)
