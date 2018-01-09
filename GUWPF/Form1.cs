@@ -20,10 +20,14 @@ namespace GUWPF
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             SR.username = Environment.UserName;
 
-            if (!Directory.Exists(@"C:\Users\"+SR.username+@"\Documents\GUWPF"))
+            string GUWPF = @"C:\Users\" + SR.username + @"\Documents\GUWPF";
+            string SpyIMG = @"C:\Users\" + SR.username + @"\Documents\GUWPF\SpyIMG";
+
+            if (!Directory.Exists(GUWPF))
             {
-                Directory.CreateDirectory(@"C:\Users\" + SR.username + @"\Documents\GUWPF");
-                Directory.CreateDirectory(@"C:\Users\" + SR.username + @"\Documents\GUWPF\SpyIMG");
+                Directory.CreateDirectory(GUWPF);
+                Directory.CreateDirectory(SpyIMG);
+
             }
 
     
@@ -128,6 +132,15 @@ namespace GUWPF
             });
         }
 
+        private void deletefiles()
+        {
+            System.IO.DirectoryInfo di = new DirectoryInfo(@"C:\Users\" + SR.username + @"\Documents\GUWPF\SpyIMG");
+            foreach (FileInfo file in di.GetFiles())
+            {
+                file.Delete();
+            }
+        }
+
         private void mebox(string mess)
         {
             System.Windows.Forms.MessageBox.Show(mess);
@@ -173,7 +186,6 @@ namespace GUWPF
             }
             else if (type == "Button" || type == "TextBlock")
             {
-
                 Element = ElementClass(type);
             }
 
@@ -181,7 +193,9 @@ namespace GUWPF
 
             try
             {
-              
+                //Clear SpyIMG files
+                deletefiles();
+
                 var curtime = DateTime.Now;
                 var day = curtime.Day;
                 var month = curtime.Month;
@@ -190,6 +204,7 @@ namespace GUWPF
                 var sec = curtime.Second;
                 var hour = curtime.Hour;
                 var minute = curtime.Minute;
+                var longTimeString = DateTime.Now.ToLongTimeString();
                 
 
                 var reformat = day + "-" + month + "-" + year + "__" + hour + "-" + minute + "-" + sec + "-";
@@ -200,7 +215,7 @@ namespace GUWPF
                 {
                     this.WindowState = FormWindowState.Minimized;
                     Thread.Sleep(500);
-                    SR.currenttime = curtime.ToString();
+                    SR.currenttime = longTimeString.ToString();
 
                     id = 0;
                     foreach (UiElement UIE in Element)
@@ -224,7 +239,7 @@ namespace GUWPF
 
                          
 
-                            listBox1.Items.Add("ID: " + SR.index + " - " + SR.autoDI + " - " + SR.classname + " - " + SR.name + " - " + UIE.Bounds.IsEmpty);
+                            listBox1.Items.Add("ID: " + SR.index + " - " + SR.autoDI + " - " + SR.classname + " - " + SR.name);
                             string ObjectUI = JsonConvert.SerializeObject(SR, Formatting.Indented);
 
                             if (SR.index == 0)
@@ -239,9 +254,11 @@ namespace GUWPF
                             }
 
                             else file.WriteLine(ObjectUI + ",");
+                           
                         }
             
                     }
+                    file.WriteLine("]");
                     this.WindowState = FormWindowState.Normal;
                 }
             }
@@ -275,7 +292,7 @@ namespace GUWPF
                         if(id == selectID)
                         {
                             //listBox1.Items.Add("ID: " + id + " - " + UIE.AutomationId + " - " + UIE.ClassName + " - " + UIE.Name + " - " + UIE.Bounds.IsEmpty);
-                            UIE.AsButton().Click();
+                            UIE.AsButton().DrawHighlight();
                         }
                         id++;
                     }
@@ -361,7 +378,7 @@ namespace GUWPF
             Element = MainWindow.FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.FrameworkIdProperty, "WPF"));
             id = 0;
 
-            using (StreamWriter writeLog = new StreamWriter(@"C:\Users\EDI\Documents\SpyResult_Capture.txt", true))
+            using (StreamWriter writeLog = new StreamWriter(@"C:\Users\"+SR.username+@"\Documents\SpyResult_Capture.txt", true))
             {
                 writeLog.WriteLine("\n");
                 writeLog.WriteLine("----------------------------------" + current_time + "----------------------------------");
