@@ -18,8 +18,8 @@ namespace GUWPF
         {
             InitializeComponent();
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
-            
-            if(!Directory.Exists(@"C:\Users\EDI\Documents\SpyIMG"))
+
+            if (!Directory.Exists(@"C:\Users\EDI\Documents\SpyIMG"))
             {
                 Directory.CreateDirectory(@"C:\Users\EDI\Documents\SpyIMG");
             }
@@ -46,8 +46,8 @@ namespace GUWPF
             private string _classname;
             private string _name;
 
-            public int index { get{ return _index; } set { _index = value; } }
-            public string autoDI { get { return _autoID;} set { _autoID = value; } }
+            public int index { get { return _index; } set { _index = value; } }
+            public string autoDI { get { return _autoID; } set { _autoID = value; } }
             public string classname { get { return _classname; } set { _classname = value; } }
             public string name { get { return _name; } set { _name = value; } }
         }
@@ -76,14 +76,14 @@ namespace GUWPF
 
 
 
-        SpyResult SR = new SpyResult();     
+        SpyResult SR = new SpyResult();
         SpyOption SO = new SpyOption();
 
         Process[] flexProc = Process.GetProcessesByName("AUT_SampleUI");
         Gu.Wpf.UiAutomation.Application App;
         IReadOnlyList<Gu.Wpf.UiAutomation.UiElement> Element;
         Gu.Wpf.UiAutomation.Window MainWindow;
-       
+
         public IReadOnlyList<Gu.Wpf.UiAutomation.UiElement> ElementClass(string type)
         {
             return MainWindow.FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.ClassNameProperty, type));
@@ -94,12 +94,12 @@ namespace GUWPF
         }
 
         int id;
-   
+
 
         // ATTACH BUTTON
         private void button1_Click(object sender, EventArgs e)
         {
-   
+
             Task.Factory.StartNew(() =>
             {
                 try
@@ -107,7 +107,8 @@ namespace GUWPF
                     App = Gu.Wpf.UiAutomation.Application.Attach(flexProc[0].Id);
                     MainWindow = App.MainWindow;
                     listBox1.Items.Add("AUT's id: " + MainWindow.ProcessId);
-                } catch(Exception ex)
+                }
+                catch (Exception ex)
                 {
                     mebox(ex.Message);
                 }
@@ -125,13 +126,13 @@ namespace GUWPF
             listBox1.Items.Clear();
 
             int getselectitem = comboBox1.SelectedIndex;
-           
-            if(getselectitem == 0)
+
+            if (getselectitem == 0)
             {
                 SO.option = SpyOption._selection.WPF.ToString();
                 Spy(SO.option);
-            } 
-            else if(getselectitem == 1)
+            }
+            else if (getselectitem == 1)
             {
                 SO.option = SpyOption._selection.Win32.ToString();
                 Spy(SO.option);
@@ -163,7 +164,7 @@ namespace GUWPF
                 Element = ElementClass(type);
             }
 
-           
+
 
             try
             {
@@ -219,8 +220,8 @@ namespace GUWPF
                         SR.autoDI = UIE.AutomationId;
                         SR.classname = UIE.ClassName;
                         SR.name = UIE.Name;
-                        
-                        
+
+
 
                         if (UIE.AutomationId == "")
                             SR.autoDI = "No AutomationID";
@@ -258,7 +259,7 @@ namespace GUWPF
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-            
+
         }
 
 
@@ -279,7 +280,7 @@ namespace GUWPF
 
         private void button3_Click(object sender, EventArgs e)
         {
-   
+
         }
 
         private void button4_Click(object sender, EventArgs e)
@@ -309,7 +310,7 @@ namespace GUWPF
 
             foreach (UiElement hlitem in Element)
             {
-                if(!Double.IsInfinity(hlitem.Bounds.Top))
+                if (!Double.IsInfinity(hlitem.Bounds.Top))
                 {
 
                     if (id == currentSelect)
@@ -330,7 +331,7 @@ namespace GUWPF
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-      
+
         }
 
 
@@ -363,7 +364,7 @@ namespace GUWPF
                     }
                     catch (Exception ex)
                     {
-                       
+
                         writeLog.WriteLine(id + " - " + UIE.ClassName + " - " + ex.Message);
                         writeLog.Flush();
                     }
